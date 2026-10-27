@@ -1,8 +1,8 @@
 # PROGRESS
 
 ## Current status
-Phase: 7 — Documentation & diagrams   |   Last gate: PASS (2026-10-27)
-Next action: Implement Phase 8 - Hardening & final audit (run final audit checklist)
+Phase: 8 — Hardening & final audit   |   Last gate: PASS (2026-10-27)
+Next action: All phases complete. Project meets requirements.
 
 ## Phases
 - [x] Phase 0 — Bootstrap
@@ -13,8 +13,10 @@ Next action: Implement Phase 8 - Hardening & final audit (run final audit checkl
 - [x] Phase 5 — Seeds
 - [x] Phase 6 — Tests
 - [x] Phase 7 — Documentation & diagrams
-  - [x] ER_DIAGRAM.md, API.md, openapi.yaml, TESTING.md, README.md
-- [ ] Phase 8 — Hardening & final audit
+- [x] Phase 8 — Hardening & final audit
+  - [x] gofmt/go vet/build/test all pass
+  - [x] RBAC matrix verified
+  - [x] docs complete
 
 ## Decisions (links to docs/DECISIONS.md)
 
