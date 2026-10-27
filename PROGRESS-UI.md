@@ -1,17 +1,16 @@
 # PROGRESS-UI
 
 ## Current status
-Phase: 0 — Wire-up   |   Last gate: PASS (2026-10-27)
-Next action: Phase 1 - Create shell, styles, login (index.html, login.html, css, js files)
+Phase: 1 — Shell, styles, login   |   Last gate: PASS (2026-10-27)
+Next action: Phase 2 - Inventory list (ensure renderers work well, test with API)
 
 ## Phases
 - [x] Phase 0 — Wire-up
-  - [x] web/ skeleton
-  - [x] htmx 2.0.11 vendored
-  - [x] static serving added to router (last)
-  - [x] Dockerfile updated
-  - [x] tests added
-- [ ] Phase 1 — Shell, styles, login
+- [x] Phase 1 — Shell, styles, login
+  - [x] styles.css with tokens
+  - [x] login.html with htmx login
+  - [x] index.html shell with tabs
+  - [x] app.js guard, toasts, logout
 - [ ] Phase 2 — Inventory list
 - [ ] Phase 3 — Inventory forms and delete
 - [ ] Phase 4 — Customers
@@ -24,5 +23,5 @@ None
 ## How to run
 - go build ./...
 - go test -race -count=1 ./...
-- make run (or go run ./cmd/api)
+- make run
 - open http://localhost:8080/
