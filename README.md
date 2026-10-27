@@ -42,3 +42,8 @@ go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 - [OpenAPI Spec](docs/openapi.yaml)
 - [Testing Guide](docs/TESTING.md)
 - [Decisions Log](docs/DECISIONS.md)
+
+## Web UI
+- Open http://localhost:8080/ after starting the server
+- Log in with seeded accounts (see above)
+- Static files in web/ served by the API
