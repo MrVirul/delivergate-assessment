@@ -96,5 +96,8 @@ func New(cfg *config.Config, db *gorm.DB) *fiber.App {
 
 	app.Get("/healthz", healthH.Healthz)
 
+	// Static files - register last
+	app.Static("/", "./web")
+
 	return app
 }
