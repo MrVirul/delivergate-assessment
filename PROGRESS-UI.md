@@ -1,11 +1,16 @@
 # PROGRESS-UI
 
 ## Current status
-Phase: 0 — Wire-up   |   Last gate: NOT RUN
-Next action: Create web/ skeleton, vendor htmx 2.x, add static serving to Go app, update Dockerfile and tests
+Phase: 0 — Wire-up   |   Last gate: PASS (2026-10-27)
+Next action: Phase 1 - Create shell, styles, login (index.html, login.html, css, js files)
 
 ## Phases
-- [ ] Phase 0 — Wire-up
+- [x] Phase 0 — Wire-up
+  - [x] web/ skeleton
+  - [x] htmx 2.0.11 vendored
+  - [x] static serving added to router (last)
+  - [x] Dockerfile updated
+  - [x] tests added
 - [ ] Phase 1 — Shell, styles, login
 - [ ] Phase 2 — Inventory list
 - [ ] Phase 3 — Inventory forms and delete
@@ -17,4 +22,7 @@ Next action: Create web/ skeleton, vendor htmx 2.x, add static serving to Go app
 None
 
 ## How to run
-(To be updated)
+- go build ./...
+- go test -race -count=1 ./...
+- make run (or go run ./cmd/api)
+- open http://localhost:8080/
