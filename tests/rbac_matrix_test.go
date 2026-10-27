@@ -23,11 +23,11 @@ func TestRBACMatrix(t *testing.T) {
 
 	// Create a fixture item
 	itemBody := map[string]interface{}{
-		"name":         "TestItem",
-		"category":     "flavor",
-		"quantity":     10,
-		"unit":         "tub",
-		"price_cents":  1000,
+		"name":          "TestItem",
+		"category":      "flavor",
+		"quantity":      10,
+		"unit":          "tub",
+		"price_cents":   1000,
 		"reorder_level": 5,
 	}
 	resp, body := ta.Do(t, http.MethodPost, "/api/items", ta.Token(t, "Owner"), itemBody)

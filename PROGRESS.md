@@ -1,8 +1,8 @@
 # PROGRESS
 
 ## Current status
-Phase: 6 — Tests   |   Last gate: PASS (2026-10-27)
-Next action: Implement Phase 7 - Documentation & diagrams (ER_DIAGRAM.md, API.md, openapi.yaml, TESTING.md, README.md)
+Phase: 7 — Documentation & diagrams   |   Last gate: PASS (2026-10-27)
+Next action: Implement Phase 8 - Hardening & final audit (run final audit checklist)
 
 ## Phases
 - [x] Phase 0 — Bootstrap
@@ -12,9 +12,8 @@ Next action: Implement Phase 7 - Documentation & diagrams (ER_DIAGRAM.md, API.md
 - [x] Phase 4 — Customers
 - [x] Phase 5 — Seeds
 - [x] Phase 6 — Tests
-  - [x] testutil, auth/config/httpx/service/db tests
-  - [x] RBAC matrix, auth integration tests
-- [ ] Phase 7 — Documentation & diagrams
+- [x] Phase 7 — Documentation & diagrams
+  - [x] ER_DIAGRAM.md, API.md, openapi.yaml, TESTING.md, README.md
 - [ ] Phase 8 — Hardening & final audit
 
 ## Decisions (links to docs/DECISIONS.md)
