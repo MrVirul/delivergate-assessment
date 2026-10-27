@@ -18,9 +18,9 @@ type Claims struct {
 }
 
 type JWTService struct {
-	secret    []byte
-	issuer    string
-	ttl       time.Duration
+	secret []byte
+	issuer string
+	ttl    time.Duration
 }
 
 func NewJWTService(secret string, ttlMinutes int) *JWTService {

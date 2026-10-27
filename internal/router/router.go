@@ -38,14 +38,20 @@ func New(cfg *config.Config, db *gorm.DB) *fiber.App {
 	// Repos
 	userRepo := repository.NewUserRepository(db)
 	revokedRepo := repository.NewRevokedTokenRepository(db)
+	itemRepo := repository.NewItemRepository(db)
+	customerRepo := repository.NewCustomerRepository(db)
 
 	// Services
 	jwtSvc := auth.NewJWTService(cfg.JWTSecret, cfg.JWTTTLMinutes)
 	authSvc := service.NewAuthService(userRepo, revokedRepo, jwtSvc, cfg.BcryptCost)
+	itemSvc := service.NewItemService(itemRepo)
+	customerSvc := service.NewCustomerService(customerRepo)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc)
 	healthH := handler.NewHealthHandler(db)
+	itemH := handler.NewItemHandler(itemSvc)
+	customerH := handler.NewCustomerHandler(customerSvc)
 
 	// Middleware
 	authMw := middleware.NewAuth(jwtSvc, db)
@@ -69,6 +75,24 @@ func New(cfg *config.Config, db *gorm.DB) *fiber.App {
 
 	protected := api.Group("", authMw.Authenticate())
 	protected.Post("/auth/logout", authH.Logout)
+
+	// Items
+	items := protected.Group("/items")
+	items.Get("/", middleware.RequirePermission(auth.ItemsRead), itemH.List)
+	items.Get("/:id", middleware.RequirePermission(auth.ItemsRead), itemH.Get)
+	items.Post("/", middleware.RequirePermission(auth.ItemsCreate), itemH.Create)
+	items.Put("/:id", middleware.RequirePermission(auth.ItemsUpdate), itemH.Replace)
+	items.Patch("/:id", middleware.RequirePermission(auth.ItemsUpdate), itemH.Patch)
+	items.Delete("/:id", middleware.RequirePermission(auth.ItemsDelete), itemH.Delete)
+
+	// Customers
+	customers := protected.Group("/customers")
+	customers.Get("/", middleware.RequirePermission(auth.CustomersRead), customerH.List)
+	customers.Get("/:id", middleware.RequirePermission(auth.CustomersRead), customerH.Get)
+	customers.Post("/", middleware.RequirePermission(auth.CustomersCreate), customerH.Create)
+	customers.Put("/:id", middleware.RequirePermission(auth.CustomersUpdate), customerH.Replace)
+	customers.Patch("/:id", middleware.RequirePermission(auth.CustomersUpdate), customerH.Patch)
+	customers.Delete("/:id", middleware.RequirePermission(auth.CustomersDelete), customerH.Delete)
 
 	app.Get("/healthz", healthH.Healthz)
 

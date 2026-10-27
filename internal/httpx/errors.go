@@ -14,7 +14,9 @@ type AppError struct {
 
 func (e *AppError) Error() string { return e.Message }
 
-func BadRequest(msg string) *AppError { return &AppError{Status: 400, Code: "BAD_REQUEST", Message: msg} }
+func BadRequest(msg string) *AppError {
+	return &AppError{Status: 400, Code: "BAD_REQUEST", Message: msg}
+}
 func Unauthorized(msg string) *AppError {
 	return &AppError{Status: 401, Code: "UNAUTHORIZED", Message: msg}
 }

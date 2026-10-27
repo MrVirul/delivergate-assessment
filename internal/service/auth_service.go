@@ -26,9 +26,9 @@ type LoginResult struct {
 }
 
 type authService struct {
-	users    repository.UserRepository
-	revoked  repository.RevokedTokenRepository
-	jwt      *auth.JWTService
+	users      repository.UserRepository
+	revoked    repository.RevokedTokenRepository
+	jwt        *auth.JWTService
 	bcryptCost int
 }
 

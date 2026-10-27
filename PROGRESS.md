@@ -1,25 +1,18 @@
 # PROGRESS
 
 ## Current status
-Phase: 1 — Core infrastructure   |   Last gate: NOT RUN
-Next action: Add auth package (permissions, jwt, password), models/migrations done partially, continue to phase 2 or complete phase 1 pieces
+Phase: 2 — Authentication   |   Last gate: PASS (2026-10-27)
+Next action: Implement Phase 3 - Inventory CRUD (models/repos/services/handlers/routes with permissions)
 
 ## Phases
 - [x] Phase 0 — Bootstrap
-  - [x] git init, go mod
-  - [x] directory skeleton
-  - [x] .gitignore, .env.example
-  - [x] Makefile, docker-compose.yml, Dockerfile
-  - [x] PROGRESS.md, docs/DECISIONS.md
-- [x] Phase 1 — Core infrastructure (partial)
-  - [x] config loader
-  - [x] database (Postgres + SQLite openers)
-  - [x] models (user, item, customer, revoked_token)
-  - [x] migrate
-  - [x] httpx (envelope, errors, pagination, validator)
-  - [x] central error handler middleware
-  - [x] cmd/migrate
-- [ ] Phase 2 — Authentication
+- [x] Phase 1 — Core infrastructure
+- [x] Phase 2 — Authentication
+  - [x] auth (permissions, jwt, password)
+  - [x] repos (users, revoked tokens)
+  - [x] service (login/logout)
+  - [x] middleware (auth, rbac, errors)
+  - [x] handlers/routes (login, logout, healthz)
 - [ ] Phase 3 — Inventory
 - [ ] Phase 4 — Customers
 - [ ] Phase 5 — Seeds
@@ -34,5 +27,6 @@ None
 
 ## How to run
 - go build ./... 
-- make migrate (needs DB)
+- make migrate
+- make run
 - docker compose up -d db

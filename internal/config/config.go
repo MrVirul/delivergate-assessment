@@ -11,21 +11,21 @@ import (
 )
 
 type Config struct {
-	AppEnv              string
-	AppPort             string
-	DatabaseURL         string
-	JWTSecret           string
-	JWTTTLMinutes       int
-	AutoMigrate         bool
-	BcryptCost          int
-	CORSAllowOrigins    string
+	AppEnv               string
+	AppPort              string
+	DatabaseURL          string
+	JWTSecret            string
+	JWTTTLMinutes        int
+	AutoMigrate          bool
+	BcryptCost           int
+	CORSAllowOrigins     string
 	LoginRateLimitPerMin int
 
-	SeedOwnerEmail    string
-	SeedOwnerPassword string
-	SeedManagerEmail  string
+	SeedOwnerEmail      string
+	SeedOwnerPassword   string
+	SeedManagerEmail    string
 	SeedManagerPassword string
-	SeedCashierEmail   string
+	SeedCashierEmail    string
 	SeedCashierPassword string
 }
 
@@ -34,21 +34,21 @@ func Load() (*Config, error) {
 	_ = godotenv.Load()
 
 	cfg := &Config{
-		AppEnv:              getEnv("APP_ENV", "development"),
-		AppPort:             getEnv("APP_PORT", "8080"),
-		DatabaseURL:         os.Getenv("DATABASE_URL"),
-		JWTSecret:           os.Getenv("JWT_SECRET"),
-		JWTTTLMinutes:       getEnvInt("JWT_TTL_MINUTES", 60),
-		AutoMigrate:         getEnvBool("AUTO_MIGRATE", true),
-		BcryptCost:          getEnvInt("BCRYPT_COST", 12),
-		CORSAllowOrigins:    getEnv("CORS_ALLOW_ORIGINS", "http://localhost:3000"),
+		AppEnv:               getEnv("APP_ENV", "development"),
+		AppPort:              getEnv("APP_PORT", "8080"),
+		DatabaseURL:          os.Getenv("DATABASE_URL"),
+		JWTSecret:            os.Getenv("JWT_SECRET"),
+		JWTTTLMinutes:        getEnvInt("JWT_TTL_MINUTES", 60),
+		AutoMigrate:          getEnvBool("AUTO_MIGRATE", true),
+		BcryptCost:           getEnvInt("BCRYPT_COST", 12),
+		CORSAllowOrigins:     getEnv("CORS_ALLOW_ORIGINS", "http://localhost:3000"),
 		LoginRateLimitPerMin: getEnvInt("LOGIN_RATE_LIMIT_PER_MIN", 10),
-		SeedOwnerEmail:      getEnv("SEED_OWNER_EMAIL", "owner@icecream.local"),
-		SeedOwnerPassword:   getEnv("SEED_OWNER_PASSWORD", "Owner@12345"),
-		SeedManagerEmail:    getEnv("SEED_MANAGER_EMAIL", "manager@icecream.local"),
-		SeedManagerPassword: getEnv("SEED_MANAGER_PASSWORD", "Manager@12345"),
-		SeedCashierEmail:    getEnv("SEED_CASHIER_EMAIL", "cashier@icecream.local"),
-		SeedCashierPassword: getEnv("SEED_CASHIER_PASSWORD", "Cashier@12345"),
+		SeedOwnerEmail:       getEnv("SEED_OWNER_EMAIL", "owner@icecream.local"),
+		SeedOwnerPassword:    getEnv("SEED_OWNER_PASSWORD", "Owner@12345"),
+		SeedManagerEmail:     getEnv("SEED_MANAGER_EMAIL", "manager@icecream.local"),
+		SeedManagerPassword:  getEnv("SEED_MANAGER_PASSWORD", "Manager@12345"),
+		SeedCashierEmail:     getEnv("SEED_CASHIER_EMAIL", "cashier@icecream.local"),
+		SeedCashierPassword:  getEnv("SEED_CASHIER_PASSWORD", "Cashier@12345"),
 	}
 
 	if cfg.AppEnv != "test" {
