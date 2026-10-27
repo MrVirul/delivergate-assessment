@@ -340,3 +340,72 @@ dialog::backdrop {
     scroll-behavior: auto !important;
   }
 }
+
+.confirm-dialog {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(0,0,0,0.5);
+}
+
+.confirm-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  max-width: 420px;
+  width: 90vw;
+  margin: auto;
+}
+
+.confirm-header {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.confirm-record {
+  margin: 0.25rem 0;
+}
+
+.confirm-sentence {
+  margin: 0.25rem 0 0.5rem 0;
+  color: var(--cocoa-soft);
+}
+
+.confirm-changes {
+  margin-top: 0.5rem;
+}
+
+.confirm-change-line {
+  margin: 0.25rem 0;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 360px) {
+  .confirm-card {
+    width: 96vw;
+    padding: 0.875rem;
+  }
+}
+
+dialog {
+  z-index: 1000;
+}
+
+.confirm-dialog {
+  z-index: 2000;
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(0,0,0,0.6);
+}

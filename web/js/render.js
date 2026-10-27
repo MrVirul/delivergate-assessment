@@ -109,7 +109,7 @@ const RENDERERS = {
           html += '<button class="btn" hx-get="/api/items/' + it.id + '" hx-target="#modal-body" hx-swap="innerHTML" data-render="item-form" onclick="openItemEdit(' + it.id + ')">Edit</button>';
         }
         if (UI.can('items:delete')) {
-          html += '<button class="btn btn-danger" hx-delete="/api/items/' + it.id + '" hx-target="closest tr" hx-swap="outerHTML" hx-confirm="Delete ' + UI.esc(it.name).replace(/"/g, '&quot;') + '? This cannot be undone.">Delete</button>';
+          html += '<button class="btn btn-danger" hx-delete="/api/items/' + it.id + '" hx-target="closest tr" hx-swap="outerHTML" hx-confirm="Delete item?" data-confirm-title="Delete item?" data-confirm-record="' + UI.esc(it.name).replace(/"/g, '&quot;') + '" data-confirm-action="This cannot be undone." data-confirm-kind="danger" data-confirm-ok="Delete item" data-confirm-safe="Keep item">Delete</button>';
         }
         html += '</td></tr>';
       }
@@ -128,7 +128,7 @@ const RENDERERS = {
   'item-form': (body) => {
     const it = body && body.data ? body.data : null;
     const isEdit = !!it;
-    let html = '<form ' + (isEdit ? 'hx-put="/api/items/' + it.id + '"' : 'hx-post="/api/items"') + ' hx-swap="none" hx-disabled-elt="find button[type=submit]"><h3>' + (isEdit ? 'Edit item' : 'Add item') + '</h3>';
+    let html = '<form ' + (isEdit ? 'hx-put="/api/items/' + it.id + '" hx-confirm="Save changes?" data-confirm-title="Save changes" data-confirm-kind="neutral" data-confirm-ok="Save changes" data-confirm-safe="Go back" data-edit-id="' + it.id + '"' : 'hx-post="/api/items"') + ' hx-swap="none" hx-disabled-elt="find button[type=submit]"><h3>' + (isEdit ? 'Edit item' : 'Add item') + '</h3>';
     html += '<div class="form-group"><label>Name</label><input name="name" required value="' + UI.esc(isEdit ? it.name : '') + '"></div>';
     html += '<div class="form-group"><label>Category</label><select name="category">' +
       ['flavor','topping','cone','cup','packaging','other'].map(c => '<option value="' + c + '"' + (isEdit && it.category === c ? ' selected' : '') + '>' + c + '</option>').join('') +
@@ -162,7 +162,7 @@ const RENDERERS = {
           html += '<button class="btn" hx-get="/api/customers/' + it.id + '" hx-target="#modal-body" hx-swap="innerHTML" data-render="customer-form" onclick="openCustomerEdit(' + it.id + ')">Edit</button>';
         }
         if (UI.can('customers:delete')) {
-          html += '<button class="btn btn-danger" hx-delete="/api/customers/' + it.id + '" hx-target="closest tr" hx-swap="outerHTML" hx-confirm="Delete ' + UI.esc(it.name).replace(/"/g, '&quot;') + '? This cannot be undone.">Delete</button>';
+          html += '<button class="btn btn-danger" hx-delete="/api/customers/' + it.id + '" hx-target="closest tr" hx-swap="outerHTML" hx-confirm="Delete item?" data-confirm-title="Delete customer?" data-confirm-record="' + UI.esc(it.name).replace(/"/g, '&quot;') + '" data-confirm-action="This cannot be undone." data-confirm-kind="danger" data-confirm-ok="Delete item" data-confirm-safe="Keep item">Delete</button>';
         }
         html += '</td></tr>';
       }
@@ -181,7 +181,7 @@ const RENDERERS = {
   'customer-form': (body) => {
     const it = body && body.data ? body.data : null;
     const isEdit = !!it;
-    let html = '<form ' + (isEdit ? 'hx-put="/api/customers/' + it.id + '"' : 'hx-post="/api/customers"') + ' hx-swap="none" hx-disabled-elt="find button[type=submit]"><h3>' + (isEdit ? 'Edit customer' : 'Add customer') + '</h3>';
+    let html = '<form ' + (isEdit ? 'hx-put="/api/customers/' + it.id + '" hx-confirm="Save changes?" data-confirm-title="Save changes" data-confirm-kind="neutral" data-confirm-ok="Save changes" data-confirm-safe="Go back" data-edit-id="' + it.id + '"' : 'hx-post="/api/customers"') + ' hx-swap="none" hx-disabled-elt="find button[type=submit]"><h3>' + (isEdit ? 'Edit customer' : 'Add customer') + '</h3>';
     html += '<div class="form-group"><label>Name</label><input name="name" required value="' + UI.esc(isEdit ? it.name : '') + '"></div>';
     html += '<div class="form-group"><label>Email</label><input name="email" value="' + UI.esc(isEdit && it.email ? it.email : '') + '"></div>';
     html += '<div class="form-group"><label>Phone</label><input name="phone" required value="' + UI.esc(isEdit ? it.phone : '') + '"></div>';

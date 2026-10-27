@@ -23,7 +23,11 @@ function openItemAdd() {
   const modal = document.getElementById('modal');
   if (modal) {
     document.getElementById('modal-title').textContent = 'Add item';
-    document.getElementById('modal-body').innerHTML = UI.render ? UI.render('item-form', null) : RENDERERS['item-form'](null);
+    const body = document.getElementById('modal-body');
+    body.innerHTML = UI.render ? UI.render('item-form', null) : RENDERERS['item-form'](null);
+    if (typeof htmx !== 'undefined' && htmx.process) {
+      htmx.process(body);
+    }
     modal.showModal();
   }
 }
@@ -32,7 +36,11 @@ function openCustomerAdd() {
   const modal = document.getElementById('modal');
   if (modal) {
     document.getElementById('modal-title').textContent = 'Add customer';
-    document.getElementById('modal-body').innerHTML = UI.render ? UI.render('customer-form', null) : RENDERERS['customer-form'](null);
+    const body = document.getElementById('modal-body');
+    body.innerHTML = UI.render ? UI.render('customer-form', null) : RENDERERS['customer-form'](null);
+    if (typeof htmx !== 'undefined' && htmx.process) {
+      htmx.process(body);
+    }
     modal.showModal();
   }
 }
@@ -49,9 +57,21 @@ if (typeof UI !== 'undefined' && !UI.render) {
 function initApp() {
   const user = UI.user();
   const token = UI.token();
+  const expires = sessionStorage.getItem('expires_at');
   if (!user || !token) {
     window.location.replace('/login.html');
     return;
+  }
+  if (expires) {
+    try {
+      if (Date.now() > parseInt(expires)) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('expires_at');
+        window.location.replace('/login.html');
+        return;
+      }
+    } catch(e) {}
   }
   const nameEl = document.getElementById('user-name');
   const roleEl = document.getElementById('user-role');
@@ -98,10 +118,89 @@ document.body.addEventListener('htmx:afterSwap', (evt) => {
     const modal = document.getElementById('modal');
     if (modal) {
       document.getElementById('modal-title').textContent = target.querySelector('h3')?.textContent || 'Form';
-      modal.showModal();
+      try { modal.showModal(); } catch (e) {}
       const first = target.querySelector('input, select, textarea');
-      if (first) first.focus();
+      if (first) try { first.focus(); } catch (e) {}
+      // snapshot forms for edit change detection
+      try {
+        const form = target.querySelector('form[data-edit-id]');
+        if (form && !form._confirmSnapshot) {
+          const data = {};
+          const fd = new FormData(form);
+          for (const [k,v] of fd.entries()) { data[k] = v; }
+          form._confirmSnapshot = data;
+        }
+      } catch (e) {}
     }
+  }
+});
+
+document.body.addEventListener('click', (e) => {
+  const delItemBtn = e.target.closest('[data-delete-item]');
+  if (delItemBtn) {
+    e.preventDefault();
+    const id = delItemBtn.getAttribute('data-delete-item');
+    const name = delItemBtn.getAttribute('data-delete-name') || 'this item';
+    confirmAction('Delete item', 'Delete ' + name + '? This cannot be undone.', () => {
+      const token = UI.token ? UI.token() : sessionStorage.getItem('token');
+      fetch('/api/items/' + id, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      }).then((resp) => {
+        if (resp.status === 401) {
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('expires_at');
+          UI.toast && UI.toast('Your session has ended. Please sign in again.', 'error');
+          setTimeout(() => window.location.replace('/login.html'), 500);
+          return;
+        }
+        if (resp.status === 204 || resp.ok) {
+          UI.toast && UI.toast('Item deleted', 'success');
+          const tr = delItemBtn.closest('tr');
+          if (tr) tr.remove();
+          htmx.trigger(document.body, 'items-changed');
+        } else {
+          UI.toast && UI.toast('Failed to delete item', 'error');
+        }
+      }).catch(() => {
+        UI.toast && UI.toast('Failed to delete item', 'error');
+      });
+    });
+    return;
+  }
+  const delCustBtn = e.target.closest('[data-delete-customer]');
+  if (delCustBtn) {
+    e.preventDefault();
+    const id = delCustBtn.getAttribute('data-delete-customer');
+    const name = delCustBtn.getAttribute('data-delete-name') || 'this customer';
+    confirmAction('Delete customer', 'Delete ' + name + '? This cannot be undone.', () => {
+      const token = UI.token ? UI.token() : sessionStorage.getItem('token');
+      fetch('/api/customers/' + id, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      }).then((resp) => {
+        if (resp.status === 401) {
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('expires_at');
+          UI.toast && UI.toast('Your session has ended. Please sign in again.', 'error');
+          setTimeout(() => window.location.replace('/login.html'), 500);
+          return;
+        }
+        if (resp.status === 204 || resp.ok) {
+          UI.toast && UI.toast('Customer deleted', 'success');
+          const tr = delCustBtn.closest('tr');
+          if (tr) tr.remove();
+          htmx.trigger(document.body, 'customers-changed');
+        } else {
+          UI.toast && UI.toast('Failed to delete customer', 'error');
+        }
+      }).catch(() => {
+        UI.toast && UI.toast('Failed to delete customer', 'error');
+      });
+    });
+    return;
   }
 });
 
@@ -185,24 +284,99 @@ document.body.addEventListener('htmx:sendError', () => {
 });
 
 // Logout
-document.addEventListener('click', (e) => {
-  if (e.target && e.target.id === 'logout-btn') {
-    const token = UI.token();
-    if (token) {
-      fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token }
-      }).finally(() => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        sessionStorage.removeItem('expires_at');
-        window.location.replace('/login.html');
-      });
-    } else {
+function confirmAction(title, message, onConfirm) {
+  const modal = document.getElementById('confirm-modal');
+  const titleEl = document.getElementById('confirm-title');
+  const msgEl = document.getElementById('confirm-message');
+  const okBtn = document.getElementById('confirm-ok');
+  const cancelBtn = document.getElementById('confirm-cancel');
+  const cancelX = document.getElementById('confirm-cancel-x');
+  if (!modal) {
+    if (confirm(message)) onConfirm && onConfirm();
+    return;
+  }
+  if (titleEl) titleEl.textContent = title || 'Confirm';
+  if (msgEl) msgEl.textContent = message || 'Are you sure?';
+  const cleanup = () => {
+    okBtn.onclick = null;
+    cancelBtn.onclick = null;
+    if (cancelX) cancelX.onclick = null;
+    modal.onclose = null;
+  };
+  okBtn.onclick = () => {
+    cleanup();
+    modal.close();
+    try { onConfirm && onConfirm(); } catch (e) {}
+  };
+  cancelBtn.onclick = () => {
+    cleanup();
+    modal.close();
+  };
+  if (cancelX) cancelX.onclick = () => {
+    cleanup();
+    modal.close();
+  };
+  modal.onclose = cleanup;
+  try { modal.showModal(); } catch (e) { if (confirm(message)) onConfirm && onConfirm(); }
+}
+
+function performLogout() {
+  const token = UI.token ? UI.token() : sessionStorage.getItem('token');
+  const doRedirect = () => {
+    try {
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
       sessionStorage.removeItem('expires_at');
-      window.location.replace('/login.html');
+    } catch (e) {}
+    window.location.replace('/login.html');
+  };
+  if (token) {
+    try {
+      fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token },
+        keepalive: true
+      }).then(doRedirect).catch(doRedirect);
+      setTimeout(doRedirect, 1500);
+      return;
+    } catch (err) {
+      doRedirect();
+      return;
     }
   }
+  doRedirect();
+}
+
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest ? e.target.closest('#logout-btn') : (e.target && e.target.id === 'logout-btn' ? e.target : null);
+  if (btn) {
+    e.preventDefault();
+    confirmAction('Sign out', 'Are you sure you want to sign out?', performLogout);
+    return;
+  }
 });
+
+document.addEventListener('submit', (e) => {
+  const form = e.target;
+  if (form && form.id === 'logout-form') {
+    e.preventDefault();
+    performLogout();
+  }
+});
+
+document.body.addEventListener('htmx:afterRequest', (evt) => {
+  const path = evt.detail.pathInfo?.requestPath || evt.detail.requestConfig?.path || '';
+  const verb = (evt.detail.requestConfig?.verb || '').toLowerCase();
+  if (evt.detail.successful) {
+    if (verb === 'delete') {
+      if (path.includes('/api/items')) {
+        try { UI.toast && UI.toast('Item deleted', 'success'); } catch(e) {}
+        // if row removed and might be last on page, reload to adjust pagination
+        setTimeout(function(){ htmx.trigger(document.body, 'items-changed'); }, 50);
+      } else if (path.includes('/api/customers')) {
+        try { UI.toast && UI.toast('Customer deleted', 'success'); } catch(e) {}
+        setTimeout(function(){ htmx.trigger(document.body, 'customers-changed'); }, 50);
+      }
+    }
+  }
+}, true);
