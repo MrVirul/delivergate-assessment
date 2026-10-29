@@ -14,8 +14,9 @@ namespace DesktopApp.Services
     public class ApiService
     {
         // Ice Cream Shop API (see ../backend). All routes are under /api.
-        private const string BaseUrl = "http://localhost:8080/api/";
-        private const int PageSize = 100;
+        // Configured in appsettings.json / appsettings.Local.json / environment variables.
+        private static readonly string BaseUrl = AppConfig.ApiBaseUrl;
+        private static readonly int PageSize = AppConfig.PageSize;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -97,7 +98,7 @@ namespace DesktopApp.Services
             }
             catch (HttpRequestException)
             {
-                LastError = "Unable to connect to the API. Please verify the backend is running on port 8080.";
+                LastError = $"Unable to connect to the API at {BaseUrl}. Please verify the backend is running.";
                 return false;
             }
             catch (TaskCanceledException)
@@ -185,6 +186,13 @@ namespace DesktopApp.Services
                 return (await ReadAsync<ApiEnvelope<InventoryItem>>(response))?.Data;
             });
 
+        public Task DeleteItemAsync(uint id) =>
+            ExecuteAsync(async () =>
+            {
+                using var response = await _httpClient.DeleteAsync($"items/{id}");
+                await EnsureSuccessAsync(response);
+            });
+
         public Task<List<Customer>> GetCustomersAsync() =>
             ExecuteAsync(async () =>
             {
@@ -239,6 +247,13 @@ namespace DesktopApp.Services
                 return (await ReadAsync<ApiEnvelope<Customer>>(response))?.Data;
             });
 
+        public Task DeleteCustomerAsync(uint id) =>
+            ExecuteAsync(async () =>
+            {
+                using var response = await _httpClient.DeleteAsync($"customers/{id}");
+                await EnsureSuccessAsync(response);
+            });
+
         private static ItemRequest ToItemRequest(InventoryItem item) =>
             new()
             {
@@ -274,7 +289,30 @@ namespace DesktopApp.Services
             catch (HttpRequestException ex)
             {
                 throw new ApiException(
-                    "Unable to connect to the API. Please verify the backend is running on port 8080.",
+                    $"Unable to connect to the API at {BaseUrl}. Please verify the backend is running.",
+                    null,
+                    ex);
+            }
+            catch (TaskCanceledException ex)
+            {
+                throw new ApiException("The request timed out. Please try again.", null, ex);
+            }
+        }
+
+        private static async Task ExecuteAsync(Func<Task> action)
+        {
+            try
+            {
+                await action();
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new ApiException(
+                    $"Unable to connect to the API at {BaseUrl}. Please verify the backend is running.",
                     null,
                     ex);
             }

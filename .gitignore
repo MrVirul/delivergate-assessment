@@ -36,3 +36,6 @@ GOSUMDB=off
 obj/
 .vs/
 *.user
+
+# Local desktop configuration overrides (copy appsettings.Local.example.json)
+desktop-app/appsettings.Local.json

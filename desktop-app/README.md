@@ -33,7 +33,34 @@ dotnet restore
 dotnet run
 ```
 
-The API base URL is `http://localhost:8080/api/` in `Services/ApiService.cs`.
+## Configuration
+
+The API base URL and page size are read from `appsettings.json`:
+
+```json
+{
+  "Api": {
+    "BaseUrl": "http://localhost:8080/api/",
+    "PageSize": 100
+  }
+}
+```
+
+To override them locally without touching tracked files, copy the example and edit it:
+
+```bash
+cp appsettings.Local.example.json appsettings.Local.json
+```
+
+`appsettings.Local.json` is gitignored. Environment variables take precedence over both JSON files:
+
+```bash
+DESKTOPAPP_Api__BaseUrl=http://localhost:9000/api/ dotnet run
+DESKTOPAPP_Api__PageSize=50 dotnet run
+```
+
+A `.env` file is not read by .NET out of the box; use the JSON override or an
+environment variable (or add the `DotNetEnv` package if you prefer `.env`).
 
 ## Seeded login accounts
 
@@ -54,9 +81,11 @@ These come from the backend `.env` file:
 | `GET` | `items?page=1&limit=100&sort=name` | List inventory (all pages are loaded) |
 | `POST` | `items` | Create an item |
 | `PUT` | `items/{id}` | Update an item |
+| `DELETE` | `items/{id}` | Delete an item |
 | `GET` | `customers?page=1&limit=100&sort=name` | List customers (all pages are loaded) |
 | `POST` | `customers` | Create a customer |
 | `PUT` | `customers/{id}` | Update a customer |
+| `DELETE` | `customers/{id}` | Delete a customer |
 
 All responses use the backend envelope format (`{ "data": ... }`, list `meta`, and `{ "error": ... }`). Item prices are stored as `price_cents` and displayed/edited as dollars.
 
@@ -69,8 +98,10 @@ The UI mirrors the backend RBAC matrix:
 | View inventory | ✓ | ✓ | ✓ |
 | Add inventory item | ✓ | ✓ | |
 | Edit inventory item | ✓ | ✓ | ✓ |
+| Delete inventory item | ✓ | | |
 | View customers | ✓ | ✓ | ✓ |
 | Add/edit customers | ✓ | ✓ | ✓ |
+| Delete customer | ✓ | | |
 
 If the API returns `403 Forbidden`, the dashboard displays:
 

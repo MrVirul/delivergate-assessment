@@ -17,11 +17,26 @@
 
         <!-- Header -->
         <DockPanel Margin="0,0,0,12">
-            <Button DockPanel.Dock="Right"
-                    Content="Log out"
-                    Click="Logout_Click"
-                    Style="{StaticResource SecondaryButton}"
-                    VerticalAlignment="Center" />
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,0,12,0"
+                            VerticalAlignment="Center"
+                            Visibility="{Binding IsLoggingOut, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="80"
+                                 Height="4"
+                                 Margin="0,0,8,0"
+                                 VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding LogoutStatusMessage}"
+                               FontSize="12"
+                               Foreground="{StaticResource MutedTextBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <Button Content="Log out"
+                        Command="{Binding LogoutCommand}"
+                        Style="{StaticResource SecondaryButton}"
+                        VerticalAlignment="Center" />
+            </StackPanel>
             <StackPanel>
                 <TextBlock Text="Enterprise Management System"
                            FontSize="21"
@@ -73,6 +88,11 @@
                                 IsEnabled="{Binding CanEditItem}"
                                 Style="{StaticResource PrimaryButton}"
                                 Margin="0,0,8,0" />
+                        <Button Content="Delete Selected"
+                                Command="{Binding DeleteItemCommand}"
+                                IsEnabled="{Binding CanDeleteItem}"
+                                Style="{StaticResource DangerButton}"
+                                Margin="0,0,8,0" />
                         <Button Content="Refresh"
                                 Command="{Binding RefreshCommand}"
                                 Style="{StaticResource SecondaryButton}" />
@@ -118,7 +138,7 @@
                             <DataGridTextColumn Header="Low Stock"
                                                 Binding="{Binding StockStatus}"
                                                 Width="90">
-                                <DataGridTextColumn.CellStyle>
+                                <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="Foreground" Value="#2E7D32" />
                                         <Style.Triggers>
@@ -128,13 +148,13 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </DataGridTextColumn.CellStyle>
+                                </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                         </DataGrid.Columns>
                     </DataGrid>
 
                     <TextBlock Grid.Row="2"
-                               Text="* Cashiers can update existing items; only Owners and Managers can add new items."
+                               Text="* Cashiers can update existing items; Managers can add and update items; only Owners can delete items."
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="11"
                                Margin="0,10,0,0" />
@@ -160,6 +180,11 @@
                                 Command="{Binding EditCustomerCommand}"
                                 IsEnabled="{Binding CanModifyCustomers}"
                                 Style="{StaticResource PrimaryButton}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Delete Customer"
+                                Command="{Binding DeleteCustomerCommand}"
+                                IsEnabled="{Binding CanDeleteCustomer}"
+                                Style="{StaticResource DangerButton}"
                                 Margin="0,0,8,0" />
                         <Button Content="Refresh"
                                 Command="{Binding RefreshCommand}"
@@ -201,7 +226,7 @@
                     </DataGrid>
 
                     <TextBlock Grid.Row="2"
-                               Text="* All roles can add and edit customer records."
+                               Text="* All roles can add and edit customer records; only Owners can delete customer records."
                                Foreground="{StaticResource MutedTextBrush}"
                                FontSize="11"
                                Margin="0,10,0,0" />

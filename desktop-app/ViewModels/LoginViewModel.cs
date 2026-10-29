@@ -23,6 +23,12 @@ namespace DesktopApp.ViewModels
         private bool isErrorVisible;
 
         [ObservableProperty]
+        private string infoMessage = string.Empty;
+
+        [ObservableProperty]
+        private bool isInfoVisible;
+
+        [ObservableProperty]
         private bool isBusy;
 
         public IAsyncRelayCommand LoginCommand { get; }
@@ -36,10 +42,20 @@ namespace DesktopApp.ViewModels
             LoginCommand = new AsyncRelayCommand(ExecuteLoginAsync);
         }
 
+        public void ShowInfo(string message)
+        {
+            InfoMessage = message;
+            IsInfoVisible = true;
+            ErrorMessage = string.Empty;
+            IsErrorVisible = false;
+        }
+
         private async Task ExecuteLoginAsync()
         {
             IsErrorVisible = false;
             ErrorMessage = string.Empty;
+            IsInfoVisible = false;
+            InfoMessage = string.Empty;
 
             if (string.IsNullOrWhiteSpace(Email) || string.IsNullOrWhiteSpace(Password))
             {

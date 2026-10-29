@@ -18,27 +18,35 @@ namespace DesktopApp.ViewModels
         private readonly ApiService _apiService;
         private readonly Func<InventoryItem?, InventoryItem?> _itemEditor;
         private readonly Func<Customer?, Customer?> _customerEditor;
+        private readonly Func<string, string, bool>? _confirmDialog;
 
         private InventoryItem? _selectedItem;
         private Customer? _selectedCustomer;
         private string _actionError = string.Empty;
         private bool _isActionErrorVisible;
         private bool _isBusy;
+        private bool _isLoggingOut;
+        private string _logoutStatusMessage = string.Empty;
 
         public MainViewModel(
             ApiService apiService,
             Func<InventoryItem?, InventoryItem?> itemEditor,
-            Func<Customer?, Customer?> customerEditor)
+            Func<Customer?, Customer?> customerEditor,
+            Func<string, string, bool>? confirmDialog = null)
         {
             _apiService = apiService;
             _itemEditor = itemEditor;
             _customerEditor = customerEditor;
+            _confirmDialog = confirmDialog;
 
-            RefreshCommand = new AsyncRelayCommand(LoadDataAsync, () => !IsBusy);
-            AddItemCommand = new AsyncRelayCommand(AddItemAsync, () => CanCreateItem);
-            EditItemCommand = new AsyncRelayCommand(EditItemAsync, () => CanEditItem && SelectedItem is not null);
-            AddCustomerCommand = new AsyncRelayCommand(AddCustomerAsync, () => CanModifyCustomers);
-            EditCustomerCommand = new AsyncRelayCommand(EditCustomerAsync, () => CanModifyCustomers && SelectedCustomer is not null);
+            RefreshCommand = new AsyncRelayCommand(LoadDataAsync, () => !IsBusy && !IsLoggingOut);
+            AddItemCommand = new AsyncRelayCommand(AddItemAsync, () => CanCreateItem && !IsBusy && !IsLoggingOut);
+            EditItemCommand = new AsyncRelayCommand(EditItemAsync, () => CanEditItem && SelectedItem is not null && !IsBusy && !IsLoggingOut);
+            DeleteItemCommand = new AsyncRelayCommand(DeleteItemAsync, () => CanDeleteItem && SelectedItem is not null && !IsBusy && !IsLoggingOut);
+            AddCustomerCommand = new AsyncRelayCommand(AddCustomerAsync, () => CanModifyCustomers && !IsBusy && !IsLoggingOut);
+            EditCustomerCommand = new AsyncRelayCommand(EditCustomerAsync, () => CanModifyCustomers && SelectedCustomer is not null && !IsBusy && !IsLoggingOut);
+            DeleteCustomerCommand = new AsyncRelayCommand(DeleteCustomerAsync, () => CanDeleteCustomer && SelectedCustomer is not null && !IsBusy && !IsLoggingOut);
+            LogoutCommand = new AsyncRelayCommand(LogoutAsync, () => CanLogout);
         }
 
         public ObservableCollection<InventoryItem> Inventory { get; } = new();
@@ -47,8 +55,11 @@ namespace DesktopApp.ViewModels
         public IAsyncRelayCommand RefreshCommand { get; }
         public IAsyncRelayCommand AddItemCommand { get; }
         public IAsyncRelayCommand EditItemCommand { get; }
+        public IAsyncRelayCommand DeleteItemCommand { get; }
         public IAsyncRelayCommand AddCustomerCommand { get; }
         public IAsyncRelayCommand EditCustomerCommand { get; }
+        public IAsyncRelayCommand DeleteCustomerCommand { get; }
+        public IAsyncRelayCommand LogoutCommand { get; }
 
         public string UserRole => NormalizeRole(_apiService.Role);
 
@@ -59,14 +70,19 @@ namespace DesktopApp.ViewModels
         public string UserSummary => $"Signed in as {CurrentUsername} ({UserRole})";
 
         // RBAC mirrors the backend permission matrix:
-        // Owner: all; Manager: item create/update + customer create/update;
+        // Owner: all (create, update, delete for items and customers);
+        // Manager: item create/update + customer create/update;
         // Cashier: item update + customer create/update.
-        public bool CanCreateItem => HasRole("Owner") || HasRole("Manager");
+        public bool CanCreateItem => (HasRole("Owner") || HasRole("Manager")) && !IsLoggingOut;
 
-        public bool CanEditItem => CanCreateItem || HasRole("Cashier");
+        public bool CanEditItem => (CanCreateItem || HasRole("Cashier")) && !IsLoggingOut;
+
+        public bool CanDeleteItem => HasRole("Owner") && !IsLoggingOut;
 
         public bool CanModifyCustomers =>
-            HasRole("Owner") || HasRole("Manager") || HasRole("Cashier");
+            (HasRole("Owner") || HasRole("Manager") || HasRole("Cashier")) && !IsLoggingOut;
+
+        public bool CanDeleteCustomer => HasRole("Owner") && !IsLoggingOut;
 
         public InventoryItem? SelectedItem
         {
@@ -76,6 +92,7 @@ namespace DesktopApp.ViewModels
                 if (SetProperty(ref _selectedItem, value))
                 {
                     EditItemCommand.NotifyCanExecuteChanged();
+                    DeleteItemCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -88,6 +105,7 @@ namespace DesktopApp.ViewModels
                 if (SetProperty(ref _selectedCustomer, value))
                 {
                     EditCustomerCommand.NotifyCanExecuteChanged();
+                    DeleteCustomerCommand.NotifyCanExecuteChanged();
                 }
             }
         }
@@ -111,8 +129,72 @@ namespace DesktopApp.ViewModels
             {
                 if (SetProperty(ref _isBusy, value))
                 {
-                    RefreshCommand.NotifyCanExecuteChanged();
+                    NotifyAllCommandsCanExecuteChanged();
                 }
+            }
+        }
+
+        public bool IsLoggingOut
+        {
+            get => _isLoggingOut;
+            private set
+            {
+                if (SetProperty(ref _isLoggingOut, value))
+                {
+                    OnPropertyChanged(nameof(CanLogout));
+                    OnPropertyChanged(nameof(CanCreateItem));
+                    OnPropertyChanged(nameof(CanEditItem));
+                    OnPropertyChanged(nameof(CanDeleteItem));
+                    OnPropertyChanged(nameof(CanModifyCustomers));
+                    OnPropertyChanged(nameof(CanDeleteCustomer));
+                    NotifyAllCommandsCanExecuteChanged();
+                }
+            }
+        }
+
+        public string LogoutStatusMessage
+        {
+            get => _logoutStatusMessage;
+            private set => SetProperty(ref _logoutStatusMessage, value);
+        }
+
+        public bool CanLogout => !IsLoggingOut;
+
+        /// <summary>Raised when the logout workflow has finished so the view can return to the login screen.</summary>
+        public event EventHandler? LogoutCompleted;
+
+        private void NotifyAllCommandsCanExecuteChanged()
+        {
+            RefreshCommand.NotifyCanExecuteChanged();
+            AddItemCommand.NotifyCanExecuteChanged();
+            EditItemCommand.NotifyCanExecuteChanged();
+            DeleteItemCommand.NotifyCanExecuteChanged();
+            AddCustomerCommand.NotifyCanExecuteChanged();
+            EditCustomerCommand.NotifyCanExecuteChanged();
+            DeleteCustomerCommand.NotifyCanExecuteChanged();
+            LogoutCommand.NotifyCanExecuteChanged();
+        }
+
+        public async Task LogoutAsync()
+        {
+            if (IsLoggingOut)
+            {
+                return;
+            }
+
+            IsLoggingOut = true;
+            LogoutStatusMessage = "Logging out, please wait...";
+
+            try
+            {
+                await _apiService.LogoutAsync();
+                LogoutStatusMessage = "Session ended. Returning to login...";
+                await Task.Delay(400);
+                LogoutCompleted?.Invoke(this, EventArgs.Empty);
+            }
+            finally
+            {
+                IsLoggingOut = false;
             }
         }
 
@@ -190,6 +272,37 @@ namespace DesktopApp.ViewModels
             });
         }
 
+        private async Task DeleteItemAsync()
+        {
+            var item = SelectedItem;
+            if (item is null)
+            {
+                return;
+            }
+
+            if (!CanDeleteItem)
+            {
+                ShowError(ForbiddenMessage);
+                return;
+            }
+
+            var confirmed = _confirmDialog?.Invoke(
+                $"Are you sure you want to delete '{item.Name}' (ID: {item.Id})?",
+                "Confirm Delete Item") ?? true;
+
+            if (!confirmed)
+            {
+                return;
+            }
+
+            await ExecuteActionAsync(async () =>
+            {
+                await _apiService.DeleteItemAsync(item.Id);
+                Inventory.Remove(item);
+                SelectedItem = null;
+            });
+        }
+
         private async Task AddCustomerAsync()
         {
             var draft = _customerEditor(null);
@@ -227,6 +340,37 @@ namespace DesktopApp.ViewModels
                 {
                     Customers[index] = updated;
                 }
+            });
+        }
+
+        private async Task DeleteCustomerAsync()
+        {
+            var customer = SelectedCustomer;
+            if (customer is null)
+            {
+                return;
+            }
+
+            if (!CanDeleteCustomer)
+            {
+                ShowError(ForbiddenMessage);
+                return;
+            }
+
+            var confirmed = _confirmDialog?.Invoke(
+                $"Are you sure you want to delete customer '{customer.Name}' (ID: {customer.Id})?",
+                "Confirm Delete Customer") ?? true;
+
+            if (!confirmed)
+            {
+                return;
+            }
+
+            await ExecuteActionAsync(async () =>
+            {
+                await _apiService.DeleteCustomerAsync(customer.Id);
+                Customers.Remove(customer);
+                SelectedCustomer = null;
             });
         }
 

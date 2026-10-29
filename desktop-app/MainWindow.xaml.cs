@@ -19,7 +19,12 @@ namespace DesktopApp
             InitializeComponent();
 
             _apiService = apiService;
-            _viewModel = new MainViewModel(apiService, ShowItemEditor, ShowCustomerEditor);
+            _viewModel = new MainViewModel(
+                apiService,
+                ShowItemEditor,
+                ShowCustomerEditor,
+                ConfirmDelete);
+            _viewModel.LogoutCompleted += OnLogoutCompleted;
             DataContext = _viewModel;
 
             Loaded += async (_, _) => await _viewModel.LoadDataAsync();
@@ -37,11 +42,19 @@ namespace DesktopApp
             return editor.ShowDialog() == true ? editor.Result : null;
         }
 
-        private async void Logout_Click(object sender, RoutedEventArgs e)
+        private bool ConfirmDelete(string message, string caption)
         {
-            await _apiService.LogoutAsync();
+            return MessageBox.Show(
+                this,
+                message,
+                caption,
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning) == MessageBoxResult.Yes;
+        }
 
-            var loginWindow = new LoginWindow();
+        private void OnLogoutCompleted(object? sender, System.EventArgs e)
+        {
+            var loginWindow = new LoginWindow("You have been logged out successfully.");
             Application.Current.MainWindow = loginWindow;
             loginWindow.Show();
             Close();

@@ -13,11 +13,21 @@ namespace DesktopApp.Views
         private readonly ApiService _apiService = new();
         private readonly LoginViewModel _viewModel;
 
+        // Parameterless constructor required by WPF when the window is created from XAML (StartupUri).
         public LoginWindow()
+            : this(null)
+        {
+        }
+
+        public LoginWindow(string? infoMessage)
         {
             InitializeComponent();
 
             _viewModel = new LoginViewModel(_apiService);
+            if (!string.IsNullOrWhiteSpace(infoMessage))
+            {
+                _viewModel.ShowInfo(infoMessage);
+            }
             _viewModel.LoginSucceeded += OnLoginSucceeded;
             DataContext = _viewModel;
 
