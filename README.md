@@ -1,32 +1,30 @@
 # Ice Cream Shop Inventory Management System
 
-Backend API built with Go, Fiber, GORM, PostgreSQL, JWT authentication, and RBAC.
+Full-stack inventory management solution comprising a Go Fiber REST API and a .NET 8 WPF desktop application.
 
-## Features
-- JWT authentication with logout (token revocation)
-- Role-based access control (Owner, Manager, Cashier)
-- Inventory items CRUD with search/filter/sort/pagination
-- Customer records CRUD
-- PostgreSQL with migrations, SQLite for tests
-- Unit and integration tests with RBAC matrix
-
-## Prerequisites
-- Go 1.22+
-- Docker
+## Project Structure
+- [`backend/`](backend/) &mdash; Go Fiber REST API with PostgreSQL, JWT authentication, and RBAC.
+- [`desktop-app/`](desktop-app/) &mdash; WPF (.NET 8) desktop client.
+- [`docs/`](docs/) &mdash; API specification, ER diagrams, testing guide, and decisions log.
 
 ## Quick Start
+
+### 1. Backend (Go Fiber)
 ```bash
+cd backend
 cp .env.example .env
-docker compose up -d db
+# Set DATABASE_URL in .env to your PostgreSQL/Neon connection string
 make migrate
 make seed
 make run
 ```
+The API server starts on `http://localhost:8080`.
 
-## Testing
+### 2. Desktop Application (WPF .NET 8)
 ```bash
-go test -race -count=1 ./...
-go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+cd desktop-app
+dotnet restore
+dotnet run
 ```
 
 ## Seed Accounts (dev)
@@ -42,8 +40,3 @@ go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 - [OpenAPI Spec](docs/openapi.yaml)
 - [Testing Guide](docs/TESTING.md)
 - [Decisions Log](docs/DECISIONS.md)
-
-## Web UI
-- Open http://localhost:8080/ after starting the server
-- Log in with seeded accounts (see above)
-- Static files in web/ served by the API

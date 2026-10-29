@@ -58,7 +58,7 @@ Backend for an ice cream shop managing **inventory items** and **customer record
 | Language | Go 1.22+ | Use `go.mod` with the installed toolchain version |
 | Web framework | `github.com/gofiber/fiber/v2` | Use v2 (stable, widely documented). Not v3 |
 | ORM | `gorm.io/gorm` | Required by spec |
-| Prod/dev DB | PostgreSQL 16 via `gorm.io/driver/postgres` | Run with docker-compose |
+| Prod/dev DB | PostgreSQL 16 via `gorm.io/driver/postgres` | Neon cloud Postgres via `DATABASE_URL` (no Docker) |
 | Test DB | In-memory SQLite via `github.com/glebarez/sqlite` | Pure Go driver, **no CGO**, works on any machine |
 | JWT | `github.com/golang-jwt/jwt/v5` | HS256 |
 | Password hashing | `golang.org/x/crypto/bcrypt` | cost 12 (cost 4 in tests for speed) |
@@ -139,8 +139,6 @@ icecream-inventory/
 ├── PROGRESS.md                  # live task tracker (agents update this)
 ├── README.md
 ├── Makefile
-├── Dockerfile
-├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
 ├── .golangci.yml                # optional, small config
@@ -195,7 +193,7 @@ Layering rule: **handler → service → repository → DB**. Handlers never tou
 ```
 APP_ENV=development            # development | production | test
 APP_PORT=8080
-DATABASE_URL=postgres://icecream:icecream@localhost:5432/icecream?sslmode=disable
+DATABASE_URL=postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require&channel_binding=require
 JWT_SECRET=change-me-to-a-random-string-of-at-least-32-characters
 JWT_TTL_MINUTES=60
 AUTO_MIGRATE=true
@@ -484,9 +482,9 @@ Track every task in `PROGRESS.md` (format in section 15). Time budget is a guide
 
 ### Phase 0 — Bootstrap (≈ 45 min)
 - `git init`, `.gitignore` (binaries, `.env`, `*.out`, `coverage.*`, IDE folders), `go mod init github.com/MrVirul/icecream-inventory` (change if the owner's module path differs).
-- Create the directory skeleton, `.env.example`, `Makefile`, `docker-compose.yml` (postgres:16-alpine with healthcheck + named volume + the API service optional), `Dockerfile` (multi-stage, non-root user, static binary).
+- Create the directory skeleton, `.env.example`, `.env` (with the Neon `DATABASE_URL`), and `Makefile`.
 - Create `PROGRESS.md` and `docs/DECISIONS.md`.
-- **Accept:** `go build ./...` passes; `docker compose up -d db` starts Postgres.
+- **Accept:** `go build ./...` passes; `make migrate` connects to the configured Neon Postgres and creates the tables.
 
 ### Phase 1 — Core infrastructure (≈ 1.5 h)
 - `config`, `database` (Postgres + SQLite openers), `models`, `migrate`, `httpx` (envelope, `AppError`, pagination parser, validator wrapper that maps `validator.ValidationErrors` to `details`), central error handler.
@@ -510,7 +508,7 @@ Track every task in `PROGRESS.md` (format in section 15). Time budget is a guide
 
 ### Phase 5 — Seeds (≈ 45 min)
 - Section 11. `cmd/seed`, `make seed`.
-- **Accept:** `make reset-db && make migrate && make seed` yields working logins; running `make seed` twice is a no-op.
+- **Accept:** `make migrate && make seed` on a fresh database yields working logins; running `make seed` twice is a no-op.
 
 ### Phase 6 — Tests (≈ 4 h) — see section 14
 - **Accept:** `go test -race ./...` green; coverage ≥ 80 % on `service`, `middleware`, `auth`; the RBAC matrix test covers all 8 operations × 3 roles + unauthenticated.
@@ -538,7 +536,7 @@ go test -race -count=1 ./...
 From Phase 2 onward, also smoke-test against a **running** server:
 
 ```bash
-make run &            # or: docker compose up -d
+make run &            # starts the API against the configured Neon database
 TOKEN=$(curl -s -X POST localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"email":"owner@icecream.local","password":"Owner@12345"}' | jq -r .data.access_token)
@@ -634,10 +632,10 @@ For **each** endpoint: method + path, purpose, required role(s) (cross-reference
 OpenAPI 3.0.3 with `bearerAuth` security scheme, reusable `components/schemas` (Item, ItemCreate, ItemPatch, Customer…, Error, Pagination meta), reusable error responses, and per-operation `x-required-roles`. Validate it by loading with any YAML parser at minimum.
 
 ### `README.md`
-Overview, features, stack, prerequisites (Go, Docker), quick start (copy `.env.example`, `docker compose up -d db`, `make migrate`, `make seed`, `make run`), test commands, project structure, seeded accounts table, link to docs, design decisions summary.
+Overview, features, stack, prerequisites (Go, PostgreSQL/Neon), quick start (copy `.env.example`, set `DATABASE_URL`, `make migrate`, `make seed`, `make run`), test commands, project structure, seeded accounts table, link to docs, design decisions summary.
 
 ### `Makefile` targets
-`run`, `build`, `test`, `test-cover`, `lint` (`go vet` + `gofmt -l`), `migrate`, `seed`, `db-up`, `db-down`, `reset-db`, `docker-build`, `tidy`.
+`run`, `build`, `test`, `test-cover`, `lint` (`go vet` + `gofmt -l`), `migrate`, `seed`, `tidy`.
 
 ---
 
@@ -668,8 +666,8 @@ Overview, features, stack, prerequisites (Go, Docker), quick start (copy `.env.e
 **Deliverables**
 - [ ] ER diagram matches the actual models (compare column by column).
 - [ ] `docs/API.md` and `docs/openapi.yaml` match actual behavior (spot-check 5 random endpoints with curl).
-- [ ] `README` quick start works from a clean clone (`docker compose down -v` then follow it verbatim).
-- [ ] `docker compose up --build` brings up DB + API and serves `/healthz`.
+- [ ] `README` quick start works from a clean clone (fresh Neon database, then follow it verbatim).
+- [ ] `make run` starts the API against the configured Neon database and serves `/healthz`.
 
 ---
 

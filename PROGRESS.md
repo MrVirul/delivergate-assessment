@@ -24,9 +24,9 @@ Next action: All phases complete. Project meets requirements.
 None
 
 ## How to run
+- Set `DATABASE_URL` in `.env` to the Neon cloud Postgres connection string
 - go build ./... 
 - go test -race -count=1 ./...
 - make migrate
 - make seed
 - make run
-- docker compose up -d db

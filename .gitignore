@@ -31,3 +31,8 @@ GOSUMDB=off
 
 # Logs
 *.log
+
+# .NET
+obj/
+.vs/
+*.user
