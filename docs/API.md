@@ -47,6 +47,6 @@ Query: `search`, `page`, `limit`, `sort` (name|created_at)
 #### DELETE /api/customers/:id (customers:delete)
 
 ## Seed Credentials (dev)
-- Owner: owner@icecream.local / Owner@12345
-- Manager: manager@icecream.local / Manager@12345
-- Cashier: cashier@icecream.local / Cashier@12345
+- Owner: owner@mail.com / Owner@123
+- Manager: manager@mail.com / Manager@123
+- Cashier: cashier@mail.com / Cashier@123
