@@ -13,7 +13,7 @@ namespace DesktopApp.Services
 {
     public class ApiService
     {
-        // Ice Cream Shop API (see ../ice-cream-shop-api). All routes are under /api.
+        // Ice Cream Shop API (see ../backend). All routes are under /api.
         private const string BaseUrl = "http://localhost:8080/api/";
         private const int PageSize = 100;
 
