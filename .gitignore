@@ -38,4 +38,5 @@ obj/
 *.user
 
 # Local desktop configuration overrides (copy appsettings.Local.example.json)
+desktop-app/appsettings.json
 desktop-app/appsettings.Local.json

@@ -13,8 +13,7 @@ namespace DesktopApp.Services
 {
     public class ApiService
     {
-        // Ice Cream Shop API (see ../backend). All routes are under /api.
-        // Configured in appsettings.json / appsettings.Local.json / environment variables.
+       
         private static readonly string BaseUrl = AppConfig.ApiBaseUrl;
         private static readonly int PageSize = AppConfig.PageSize;
 
