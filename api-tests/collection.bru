@@ -1,3 +1,40 @@
 meta {
   name: api-tests
 }
+
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+docs {
+  # Ice Cream Inventory API
+
+  Bruno collection for the Delivergate assessment backend.
+
+  ## Run order
+
+  1. Select the `Local` environment.
+  2. Run the `Auth > Login` request first. It stores the JWT in the runtime
+     variable `token`, which the collection-level Bearer auth uses.
+  3. Run the remaining requests. `Create Item` and `Create Customer` store the
+     new record IDs in `itemId` and `customerId` for the follow-up requests.
+
+  Running the whole collection with `bru run` executes everything in sequence,
+  including cleanup/logout.
+
+  ## Seed credentials
+
+  The `Local` environment uses the values from `backend/.env`:
+
+  | Role    | Email              | Password      |
+  | ------- | ------------------ | ------------- |
+  | Owner   | owner@mail.com     | Owner@123     |
+  | Manager | manager@mail.com   | Manager@123   |
+  | Cashier | cashier@mail.com   | Cashier@123   |
+
+  If your `SEED_*` variables differ, update `environments/Local.bru`.
+}

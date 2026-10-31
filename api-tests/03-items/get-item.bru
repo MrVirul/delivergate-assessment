@@ -1,0 +1,67 @@
+meta {
+  name: Get Item
+  type: http
+  seq: 3
+  tags: [
+    items
+    read
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/items/{{itemId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("returns the requested item", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.data.id).to.equal(Number(bru.getVar("itemId")));
+    expect(res.body.data).to.have.property("low_stock");
+  });
+}
+
+example {
+  name: Get item - 200 OK
+  description: Reads back the Ceylon Vanilla Reserve created earlier in the run.
+  
+  request: {
+    url: http://localhost:8080/api/items/11
+    method: GET
+  }
+  
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+  
+    status: {
+      code: 200
+      text: OK
+    }
+  
+    body: {
+      type: json
+      content: '''
+        {
+          "data": {
+            "id": 11,
+            "name": "Ceylon Vanilla Reserve",
+            "category": "flavor",
+            "description": "Small-batch Ceylon vanilla bean ice cream churned for the weekend rush",
+            "quantity": 18,
+            "unit": "tub",
+            "price_cents": 185000,
+            "reorder_level": 6,
+            "low_stock": false,
+            "created_by_id": 1,
+            "updated_by_id": 1,
+            "created_at": "2026-10-30T10:42:18+05:30",
+            "updated_at": "2026-10-30T10:42:18+05:30"
+          }
+        }
+      '''
+    }
+  }
+}

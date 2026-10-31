@@ -11,7 +11,7 @@ import (
 func TestAuthFlow(t *testing.T) {
 	ta := testutil.NewTestApp(t)
 	// wrong password
-	resp, body := ta.Do(t, http.MethodPost, "/api/auth/login", "", map[string]string{"email": "owner@icecream.local", "password": "wrong"})
+	resp, body := ta.Do(t, http.MethodPost, "/api/auth/login", "", map[string]string{"email": "owner@mail.com", "password": "wrong"})
 	require.Equal(t, 401, resp.StatusCode)
 	var res map[string]interface{}
 	require.NoError(t, decodeJSON(body, &res))

@@ -1,0 +1,90 @@
+meta {
+  name: Login
+  type: http
+  seq: 1
+  tags: [
+    auth
+    smoke
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{ownerEmail}}",
+    "password": "{{ownerPassword}}"
+  }
+}
+
+script:post-response {
+  bru.setVar("token", res.body.data.access_token);
+}
+
+tests {
+  test("returns an access token", function() {
+    expect(res.status).to.equal(200);
+    expect(res.body.data.access_token).to.be.a("string");
+    expect(res.body.data.token_type).to.equal("Bearer");
+  });
+  
+  test("returns the owner user", function() {
+    expect(res.body.data.user.email).to.equal(bru.getEnvVar("ownerEmail"));
+    expect(res.body.data.user.role).to.equal("Owner");
+  });
+}
+
+example {
+  name: Owner login - 200 OK
+  description: Seeded Owner account signs in and receives a 60 minute bearer token.
+  
+  request: {
+    url: http://localhost:8080/api/auth/login
+    method: POST
+    mode: json
+    headers: {
+      Content-Type: application/json
+    }
+  
+    body:json: {
+      {
+        "email": "{{ownerEmail}}",
+        "password": "{{ownerPassword}}"
+      }
+    }
+  }
+  
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+  
+    status: {
+      code: 200
+      text: OK
+    }
+  
+    body: {
+      type: json
+      content: '''
+        {
+          "data": {
+            "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NjE4MTY4MDAsImp0aSI6IjE3ZGE0Y2E2LTJhOWItNDFmNS04YzJjLTBkYzhmN2I0YzY5MSIsInJvbGUiOiJPd25lciIsInN1YiI6MX0.5Kk3nG9wT2sV8xQ4mJ7pLcR1yB6dF0hN3uA9eS2vW4o",
+            "token_type": "Bearer",
+            "expires_in": 3600,
+            "user": {
+              "id": 1,
+              "name": "Owner",
+              "email": "owner@mail.com",
+              "role": "Owner"
+            }
+          }
+        }
+      '''
+    }
+  }
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Logout
+  type: http
+  seq: 1
+  tags: [
+    auth
+    cleanup
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/auth/logout
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("revokes the current token", function() {
+    expect(res.status).to.equal(204);
+  });
+}
+
+example {
+  name: Logout - 204 No Content
+  description: Revokes the bearer token issued at the start of the run.
+  
+  request: {
+    url: http://localhost:8080/api/auth/logout
+    method: POST
+  }
+  
+  response: {
+    status: {
+      code: 204
+      text: No Content
+    }
+  }
+}

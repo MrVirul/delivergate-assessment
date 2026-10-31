@@ -47,6 +47,7 @@ Query: `search`, `page`, `limit`, `sort` (name|created_at)
 #### DELETE /api/customers/:id (customers:delete)
 
 ## Seed Credentials (dev)
+The defaults below come from [`backend/.env.example`](../backend/.env.example). If you override the `SEED_*` variables in your `.env`, use those values instead.
 - Owner: owner@mail.com / Owner@123
 - Manager: manager@mail.com / Manager@123
 - Cashier: cashier@mail.com / Cashier@123

@@ -18,7 +18,7 @@ Next action: All phases complete. Project meets requirements.
   - [x] RBAC matrix verified
   - [x] docs complete
 
-## Decisions (links to docs/DECISIONS.md)
+## Decisions
 
 ## Blockers
 None

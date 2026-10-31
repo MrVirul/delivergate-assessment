@@ -1,0 +1,11 @@
+meta {
+  name: Auth
+  seq: 1
+}
+
+docs {
+  # Authentication
+
+  Login is public and returns a JWT. The post-response script stores the token
+  in the runtime variable `token`, used by the collection-level Bearer auth.
+}

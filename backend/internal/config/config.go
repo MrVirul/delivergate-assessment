@@ -43,12 +43,12 @@ func Load() (*Config, error) {
 		BcryptCost:           getEnvInt("BCRYPT_COST", 12),
 		CORSAllowOrigins:     getEnv("CORS_ALLOW_ORIGINS", "http://localhost:3000"),
 		LoginRateLimitPerMin: getEnvInt("LOGIN_RATE_LIMIT_PER_MIN", 10),
-		SeedOwnerEmail:       getEnv("SEED_OWNER_EMAIL", "owner@icecream.local"),
-		SeedOwnerPassword:    getEnv("SEED_OWNER_PASSWORD", "Owner@12345"),
-		SeedManagerEmail:     getEnv("SEED_MANAGER_EMAIL", "manager@icecream.local"),
-		SeedManagerPassword:  getEnv("SEED_MANAGER_PASSWORD", "Manager@12345"),
-		SeedCashierEmail:     getEnv("SEED_CASHIER_EMAIL", "cashier@icecream.local"),
-		SeedCashierPassword:  getEnv("SEED_CASHIER_PASSWORD", "Cashier@12345"),
+		SeedOwnerEmail:       getEnv("SEED_OWNER_EMAIL", "owner@mail.com"),
+		SeedOwnerPassword:    getEnv("SEED_OWNER_PASSWORD", "Owner@123"),
+		SeedManagerEmail:     getEnv("SEED_MANAGER_EMAIL", "manager@mail.com"),
+		SeedManagerPassword:  getEnv("SEED_MANAGER_PASSWORD", "Manager@123"),
+		SeedCashierEmail:     getEnv("SEED_CASHIER_EMAIL", "cashier@mail.com"),
+		SeedCashierPassword:  getEnv("SEED_CASHIER_PASSWORD", "Cashier@123"),
 	}
 
 	if cfg.AppEnv != "test" {

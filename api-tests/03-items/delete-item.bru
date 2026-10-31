@@ -1,0 +1,38 @@
+meta {
+  name: Delete Item
+  type: http
+  seq: 6
+  tags: [
+    items
+    write
+  ]
+}
+
+delete {
+  url: {{baseUrl}}/api/items/{{itemId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("deletes the item", function() {
+    expect(res.status).to.equal(204);
+  });
+}
+
+example {
+  name: Delete item - 204 No Content
+  description: Removes the test item so the collection can be run repeatedly.
+  
+  request: {
+    url: http://localhost:8080/api/items/11
+    method: DELETE
+  }
+  
+  response: {
+    status: {
+      code: 204
+      text: No Content
+    }
+  }
+}

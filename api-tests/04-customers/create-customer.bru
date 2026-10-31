@@ -1,0 +1,93 @@
+meta {
+  name: Create Customer
+  type: http
+  seq: 2
+  tags: [
+    customers
+    write
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/customers
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "Ishara Weerasinghe",
+    "email": "ishara.weerasinghe@gmail.com",
+    "phone": "+94 77 987 6543",
+    "address": "No. 18, Flower Road, Colombo 07",
+    "notes": "Weekend regular, collects two kithul treacle tubs for family gatherings"
+  }
+}
+
+script:post-response {
+  bru.setVar("customerId", res.body.data.id);
+}
+
+tests {
+  test("creates a customer", function() {
+    expect(res.status).to.equal(201);
+    expect(res.body.data.id).to.be.a("number");
+    expect(res.body.data.name).to.equal("Ishara Weerasinghe");
+    expect(res.body.data.phone).to.equal("+94 77 987 6543");
+  });
+}
+
+example {
+  name: Create customer - 201 Created
+  description: Registers a regular Colombo customer for the weekend kithul treacle order.
+  
+  request: {
+    url: http://localhost:8080/api/customers
+    method: POST
+    mode: json
+    headers: {
+      Content-Type: application/json
+    }
+  
+    body:json: {
+      {
+        "name": "Ishara Weerasinghe",
+        "email": "ishara.weerasinghe@gmail.com",
+        "phone": "+94 77 987 6543",
+        "address": "No. 18, Flower Road, Colombo 07",
+        "notes": "Weekend regular, collects two kithul treacle tubs for family gatherings"
+      }
+    }
+  }
+  
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+  
+    status: {
+      code: 201
+      text: Created
+    }
+  
+    body: {
+      type: json
+      content: '''
+        {
+          "data": {
+            "id": 6,
+            "name": "Ishara Weerasinghe",
+            "email": "ishara.weerasinghe@gmail.com",
+            "phone": "+94 77 987 6543",
+            "address": "No. 18, Flower Road, Colombo 07",
+            "notes": "Weekend regular, collects two kithul treacle tubs for family gatherings",
+            "created_by_id": 1,
+            "updated_by_id": 1,
+            "created_at": "2026-10-30T10:44:12+05:30",
+            "updated_at": "2026-10-30T10:44:12+05:30"
+          }
+        }
+      '''
+    }
+  }
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Customers
+  seq: 4
+}
+
+docs {
+  # Customers
+
+  All routes require a Bearer token and the relevant `customers:*` permission.
+
+  List query parameters:
+
+  - `search` - matches name, email, or phone
+  - `page`, `limit` - pagination (`limit` max 100)
+  - `sort` - `name`, `created_at`; prefix `-` for desc
+
+  Run `Create Customer` before the ID-based requests, or set the collection
+  variable `customerId` to an existing customer.
+}

@@ -35,12 +35,12 @@ func NewTestApp(t *testing.T) *TestApp {
 		BcryptCost:           4,
 		CORSAllowOrigins:     "*",
 		LoginRateLimitPerMin: 1000,
-		SeedOwnerEmail:       "owner@icecream.local",
-		SeedOwnerPassword:    "Owner@12345",
-		SeedManagerEmail:     "manager@icecream.local",
-		SeedManagerPassword:  "Manager@12345",
-		SeedCashierEmail:     "cashier@icecream.local",
-		SeedCashierPassword:  "Cashier@12345",
+		SeedOwnerEmail:       "owner@mail.com",
+		SeedOwnerPassword:    "Owner@123",
+		SeedManagerEmail:     "manager@mail.com",
+		SeedManagerPassword:  "Manager@123",
+		SeedCashierEmail:     "cashier@mail.com",
+		SeedCashierPassword:  "Cashier@123",
 	}
 	db, err := database.OpenSQLite(fmt.Sprintf("file:%s?mode=memory&cache=shared", t.Name()))
 	require.NoError(t, err)

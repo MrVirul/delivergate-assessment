@@ -1,0 +1,38 @@
+meta {
+  name: Delete Customer
+  type: http
+  seq: 6
+  tags: [
+    customers
+    write
+  ]
+}
+
+delete {
+  url: {{baseUrl}}/api/customers/{{customerId}}
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("deletes the customer", function() {
+    expect(res.status).to.equal(204);
+  });
+}
+
+example {
+  name: Delete customer - 204 No Content
+  description: Removes the test customer so the collection can be run repeatedly.
+  
+  request: {
+    url: http://localhost:8080/api/customers/6
+    method: DELETE
+  }
+  
+  response: {
+    status: {
+      code: 204
+      text: No Content
+    }
+  }
+}

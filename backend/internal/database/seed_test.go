@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/MrVirul/icecream-inventory/internal/auth"
+	"github.com/MrVirul/icecream-inventory/internal/models"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -19,12 +20,12 @@ func TestSeedIdempotent(t *testing.T) {
 	cfg := SeedConfig{
 		AppEnv:              "development",
 		BcryptCost:          4,
-		SeedOwnerEmail:      "owner@icecream.local",
-		SeedOwnerPassword:   "Owner@12345",
-		SeedManagerEmail:    "manager@icecream.local",
-		SeedManagerPassword: "Manager@12345",
-		SeedCashierEmail:    "cashier@icecream.local",
-		SeedCashierPassword: "Cashier@12345",
+		SeedOwnerEmail:      "owner@mail.com",
+		SeedOwnerPassword:   "Owner@123",
+		SeedManagerEmail:    "manager@mail.com",
+		SeedManagerPassword: "Manager@123",
+		SeedCashierEmail:    "cashier@mail.com",
+		SeedCashierPassword: "Cashier@123",
 	}
 	require.NoError(t, Seed(db, cfg))
 	require.NoError(t, Seed(db, cfg))
@@ -35,6 +36,22 @@ func TestSeedIdempotent(t *testing.T) {
 	var u struct {
 		PasswordHash string
 	}
-	require.NoError(t, db.Table("users").Select("password_hash").Where("email = ?", "owner@icecream.local").First(&u).Error)
-	require.NoError(t, auth.ComparePassword(u.PasswordHash, "Owner@12345"))
+	require.NoError(t, db.Table("users").Select("password_hash").Where("email = ?", "owner@mail.com").First(&u).Error)
+	require.NoError(t, auth.ComparePassword(u.PasswordHash, "Owner@123"))
+
+	// verify sample items and customers are seeded once
+	var itemCount, customerCount int64
+	db.Model(&models.InventoryItem{}).Count(&itemCount)
+	db.Model(&models.Customer{}).Count(&customerCount)
+	require.Equal(t, int64(10), itemCount)
+	require.Equal(t, int64(5), customerCount)
+
+	var lowStock models.InventoryItem
+	require.NoError(t, db.Where("name = ?", "Mango").First(&lowStock).Error)
+	require.Less(t, lowStock.Quantity, lowStock.ReorderLevel)
+
+	var customer models.Customer
+	require.NoError(t, db.Where("phone = ?", "+94 77 123 4567").First(&customer).Error)
+	require.NotNil(t, customer.Email)
+	require.Contains(t, customer.Address, "Colombo")
 }

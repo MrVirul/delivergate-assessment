@@ -1,0 +1,21 @@
+meta {
+  name: Items
+  seq: 3
+}
+
+docs {
+  # Inventory Items
+
+  All routes require a Bearer token and the relevant `items:*` permission.
+
+  List query parameters:
+
+  - `search` - matches name or description
+  - `category` - `flavor`, `topping`, `cone`, `cup`, `packaging`, `other`
+  - `low_stock` - `true` to return items at or below their reorder level
+  - `page`, `limit` - pagination (`limit` max 100)
+  - `sort` - `name`, `quantity`, `price_cents`, `created_at`; prefix `-` for desc
+
+  Run `Create Item` before the ID-based requests, or set the collection variable
+  `itemId` to an existing item.
+}
